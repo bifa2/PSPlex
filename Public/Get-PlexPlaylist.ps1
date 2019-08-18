@@ -13,7 +13,6 @@ function Get-PlexPlaylist
 	
 	if(!$PlexConfigData)
 	{
-		# User has either not run Get-PlexAuthentication or imported the config.
 		throw "You must call 'Import-PlexConfiguration' before calling this function."
 	}
 
