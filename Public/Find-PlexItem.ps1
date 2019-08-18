@@ -23,14 +23,26 @@ function Find-PlexItem
 
 	$RestEndpoint   = "/hubs/search/"
 
+	Write-Verbose -Message "Searching for $ItemName."
 	try 
 	{
+		
 		[array]$data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`includeCollections=0&sectionId=&query=$($ItemName)&limit=50&X-Plex-Token=$($PlexConfigData.Token)" -Method GET -ErrorAction Stop
-		[array]$results = $data.MediaContainer.Hub | Where-Object { $_.type -eq $ItemType } | Select-Object -Expand Video
-		if($ExactMatch)
+		[array]$results = $data.MediaContainer.Hub | Where-Object { $_.type -eq $ItemType }
+		if($results.size -gt 0)
 		{
-			$results = $results | Where-Object { $_.title -eq $ItemName }
+			$results = $results | Select-Object -Expand Video
+			if($ExactMatch)
+			{
+				$results = $results | Where-Object { $_.title -eq $ItemName }
+			}
 		}
+		else
+		{
+			Write-Verbose -Message "No result found."
+			return
+		}
+		
     }
     catch
     {
