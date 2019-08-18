@@ -17,7 +17,11 @@ function Save-PlexConfiguration
 
         [Parameter(Mandatory=$false)]
 		[Int]
-		$Port = 32400
+		$Port = 32400,
+
+        [Parameter(Mandatory=$false)]
+		[String]
+		$FileName = 'PSPlexConfig.json'
     )
 
 	if(!$PlexConfigData)
@@ -33,7 +37,7 @@ function Save-PlexConfiguration
 	$PlexConfigData | Add-Member -MemberType NoteProperty -Name 'Protocol' -Value $Protocol -Force
 	$PlexConfigData | Add-Member -MemberType NoteProperty -Name 'Port' -Value $Port -Force
 
-	$ConfigFile = "$env:appdata\PSPlex\PSPlexConfig.json"
+	$ConfigFile = "$env:appdata\PSPlex\$FileName"
 	if(-not (Test-Path (Split-Path $ConfigFile))) 
 	{
 		New-Item -ItemType Directory -Path (Split-Path $ConfigFile) | Out-Null
