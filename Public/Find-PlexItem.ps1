@@ -16,9 +16,9 @@ function Find-PlexItem
 		$ExactMatch
     )
 
-	if(!$PlexConfigData)
+	if($PlexConfigData.PlexServer -eq $Null)
 	{
-		throw "You must call 'Get-PlexAuthenticationToken' before calling this function."
+		throw "No saved configuration. Please run Get-PlexAuthenticationToken, then Save-PlexConfiguration first."
 	}
 
 	$RestEndpoint   = "/hubs/search/"

@@ -7,7 +7,7 @@ function Get-PlexItem
 		$ItemID
     )
 
-	if(!$PlexConfigData)
+	if($PlexConfigData.PlexServer -eq $Null)
 	{
 		throw "You must call 'Get-PlexAuthenticationToken' or 'Import-PlexConfiguration' before calling this function."
 	}
