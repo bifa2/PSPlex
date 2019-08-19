@@ -24,9 +24,9 @@ function Save-PlexConfiguration
 		$FileName = 'PSPlexConfig.json'
     )
 
-	if($PlexConfigData.PlexServer -eq $Null)
+	if(!$PlexConfigData)
 	{
-		throw "No saved configuration. Please run Get-PlexAuthenticationToken, then Save-PlexConfiguration first."
+		throw "No auth token. Please run Get-PlexAuthenticationToken first, then Save-PlexConfiguration."
 	}
 
 	# We already have a script scoped $PlexConfigData created from Get-PlexAuthenticationToken
