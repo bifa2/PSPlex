@@ -14,7 +14,7 @@ function Get-PlexUserToken
     # Use the machine ID to get the Server Access Tokens for the users:
     try 
     {
-        Write-Verbose -Message "Getting server access tokens"
+        Write-Verbose -Message "Getting all server access tokens"
         $data = Invoke-RestMethod -Uri "https://plex.tv/api/servers/$($machineIdentifier)/access_tokens.xml?auth_token=$($PlexConfigData.Token)&includeProfiles=1&includeProviders=1" -ErrorAction Stop
         
         # Get data for the user we wish to copy to:
