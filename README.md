@@ -21,13 +21,20 @@ Get a list of users with access to your server:
 
 > `Get-PlexUser`
 
-Copy Playlists from your account to another:
+Copy a playlist from your account to another:
 
-> `Copy-PlexPlaylist -PlaylistName 'Family' -Username 'steveo@contoso.com' -verbose`
+> `Copy-PlexPlaylist -PlaylistName 'Family' -Username 'yourfriend@theiremail.com' -verbose`
 
-Copy Playlists from your account to all accounts:
+Copy **all** playlists from your account to another account:
 
 > `Get-PlexPlaylist | Foreach-Object { Copy-PlexPlaylist -PlaylistName $_.title -Username 'yourfriend@theiremail.com' -verbose }`
+
+Copy a playlist to **all** users:
+
+> `$Users = Get-PlexUser`
+> `$Users | Foreach-Object { Copy-PlexPlaylist -PlaylistName 'Family' -Username $_.username -verbose }`
+
+
 
 # Limitations:
 
