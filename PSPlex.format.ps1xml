@@ -8,15 +8,6 @@
 			</ViewSelectedBy>
 			<TableControl>
 				<TableHeaders>
-					<TableColumnHeader>
-						<Width>30</Width>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Width>9</Width>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Width>5</Width>
-					</TableColumnHeader>
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
@@ -42,21 +33,6 @@
 			</ViewSelectedBy>
 			<TableControl>
 				<TableHeaders>
-					<TableColumnHeader>
-						<Width>30</Width>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Width>30</Width>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Width>30</Width>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Width>10</Width>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Width>9</Width>
-					</TableColumnHeader>
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
@@ -75,6 +51,67 @@
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>allowSync</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>DefaultView</Name>
+			<ViewSelectedBy>
+				<TypeName>PSPlex.Session</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>title</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>username</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>playerstate</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>sessionid</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>transcodesession</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<ScriptBlock>
+									if($_.type -eq 'episode')
+									{
+										$_.grandparentTitle + ' - ' + $_.parentTitle + ' - ' + $_.title
+									}
+									else
+									{
+										$_.title
+									}
+								</ScriptBlock>
+							</TableColumnItem>
+							<TableColumnItem>
+								<ScriptBlock>
+									$_.User.title
+								</ScriptBlock>
+							</TableColumnItem>
+							<TableColumnItem>
+								<ScriptBlock>
+									$_.Player.State
+								</ScriptBlock>
+							</TableColumnItem>
+							<TableColumnItem>
+								<ScriptBlock>
+									$_.Session.id
+								</ScriptBlock>
+							</TableColumnItem>
+							<TableColumnItem>
+								<ScriptBlock>$_.TranscodeSession</ScriptBlock>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>
