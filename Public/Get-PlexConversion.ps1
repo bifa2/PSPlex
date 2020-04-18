@@ -1,10 +1,10 @@
-function Get-PlexItem
+function Get-PlexConversion
 {
 	[CmdletBinding()]
 	param(
-        [Parameter(Mandatory=$true,ParameterSetName='ItemID')]
+        [Parameter(Mandatory=$false,ParameterSetName='SessionId')]
         [String]
-		$ItemID
+		$SessionId
     )
 
 	if($PlexConfigData.PlexServer -eq $Null)
@@ -12,7 +12,7 @@ function Get-PlexItem
 		throw "You must call 'Get-PlexAuthenticationToken' or 'Import-PlexConfiguration' before calling this function."
 	}
 
-	$RestEndpoint   = "library/metadata/$ItemID"
+	$RestEndpoint   = "status/sessions/background"
 
 	try 
 	{

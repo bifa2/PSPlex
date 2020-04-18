@@ -17,12 +17,16 @@ function Save-PlexConfiguration
 
         [Parameter(Mandatory=$false)]
 		[Int]
-		$Port = 32400
+		$Port = 32400,
+
+        [Parameter(Mandatory=$false)]
+		[String]
+		$FileName = 'PSPlexConfig.json'
     )
 
 	if(!$PlexConfigData)
 	{
-		throw "You must call 'Get-PlexAuthenticationToken' before calling this function."
+		throw "No auth token. Please run Get-PlexAuthenticationToken first, then Save-PlexConfiguration."
 	}
 
 	# We already have a script scoped $PlexConfigData created from Get-PlexAuthenticationToken
@@ -33,7 +37,7 @@ function Save-PlexConfiguration
 	$PlexConfigData | Add-Member -MemberType NoteProperty -Name 'Protocol' -Value $Protocol -Force
 	$PlexConfigData | Add-Member -MemberType NoteProperty -Name 'Port' -Value $Port -Force
 
-	$ConfigFile = "$env:appdata\PSPlex\PSPlexConfig.json"
+	$ConfigFile = "$env:appdata\PSPlex\$FileName"
 	if(-not (Test-Path (Split-Path $ConfigFile))) 
 	{
 		New-Item -ItemType Directory -Path (Split-Path $ConfigFile) | Out-Null
@@ -51,5 +55,5 @@ function Save-PlexConfiguration
 	}
 
 	# Save to disk:
-	$PlexConfigDataToStore | ConvertTo-Json | Out-File -FilePath $ConfigFile
+	$PlexConfigDataToStore | ConvertTo-Json | Out-File -FilePath $ConfigFile -Force
 }

@@ -63,27 +63,32 @@ Copyright = '(c) 2019 bifa2. All rights reserved.'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = @('PSPlex.format.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-	'Copy-PlexPlaylist',
-    'Find-PlexItem',
-    'Get-PlexAuthenticationToken',
-	'Get-PlexCollection',
-	'Get-PlexItem',
-	'Get-PlexLibrary',
-	'Get-PlexPlaylist',
-	'Get-PlexPlaylistItem',
-	'Get-PlexServer',
-    'Get-PlexUser',
-    'Import-PlexConfiguration',
-    'Remove-PlexPlaylist',
-    'Save-PlexConfiguration',
-    'Set-PlexVideoAttributes',
+	'Copy-PlexPlaylist'
+    'Find-PlexItem'
+    'Get-PlexAuthenticationToken'
+	'Get-PlexCollection'
+	'Get-PlexConversion'
+	'Get-PlexItem'
+	'Get-PlexLibrary'
+	'Get-PlexPlaylist'
+	'Get-PlexServer'
+    'Get-PlexSession'
+    'Get-PlexSharedLibrary'
+    'Get-PlexUser'
+    'Import-PlexConfiguration'
+    'Remove-PlexPlaylist'
+    'Save-PlexConfiguration'
+    'Set-PlexItemWatchStatus'
+    'Stop-PlexConversion'
+    'Stop-PlexSession'
+	'Update-PlexItemMetadata'
 	'Update-PlexLibrary'
 )
 
