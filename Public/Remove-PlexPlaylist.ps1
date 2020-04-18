@@ -2,7 +2,7 @@ function Remove-PlexPlaylist
 {
 	[CmdletBinding()]
 	param(		
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory=$true)]
         [String]
 		$ID,
 		
@@ -19,10 +19,12 @@ function Remove-PlexPlaylist
 
     $RestEndpoint   = "playlists/$ID"
 
+	#############################################################################
+	Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Removing playlist"
 	try 
 	{
 		if($AlternativeToken) { $Token = $AlternativeToken} else { $Token = $PlexConfigData.Token }
-		Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`X-Plex-Token=$Token" -Method DELETE -ErrorAction Stop
+		Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`X-Plex-Token=$Token" -Method DELETE -ErrorAction Stop | Out-Null
     }
     catch
     {
