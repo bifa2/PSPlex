@@ -28,13 +28,41 @@ function Find-PlexItem
 	{
 		
 		[array]$data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`includeCollections=0&sectionId=&query=$($ItemName)&limit=50&X-Plex-Token=$($PlexConfigData.Token)" -Method GET -ErrorAction Stop
-		[array]$results = $data.MediaContainer.Hub | Where-Object { $_.type -eq $ItemType }
-		if($results.size -gt 0)
+		
+		# Refine by type:
+		$ItemTypeResults = $data.MediaContainer.Hub | Where-Object { $_.type -eq $ItemType }
+
+		# Example return object:
+		<#
+			title         : Movies
+			type          : movie
+			hubIdentifier : movie
+			size          : 2
+			more          : 0
+			Video         : {Video, Video}
+		#>
+
+		if($ItemTypeResults.size -gt 0)
 		{
-			$results = $results | Select-Object -Expand Video
+			[Array]$Results = $ItemTypeResults | Select-Object -ExpandProperty Video
+
+			# Refine by the Item name to attempt an exact match:
 			if($ExactMatch)
 			{
-				$results = $results | Where-Object { $_.title -eq $ItemName }
+				Write-Debug -Message "Exact match was specified"
+				[Array]$Results = $Results | Where-Object { $_.title -eq $ItemName }
+				
+				# There could still be more than one result with an exact title match:
+				if($Results.count -gt 1)
+				{
+					Write-Warning -Message "Exact match was specified but there was more than 1 result for $ItemName."
+					$Results
+					return
+				}
+				else 
+				{
+					Write-Verbose -Message "No exact match found for $ItemName"
+				}			
 			}
 		}
 		else

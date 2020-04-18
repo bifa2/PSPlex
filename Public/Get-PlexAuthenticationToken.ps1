@@ -19,7 +19,7 @@ function Get-PlexAuthenticationToken
 	param(
         [Parameter(Mandatory=$false)]
         [PSCredential]
-        $Credential
+    	$Credential
     )
 
     if(!$Credential)

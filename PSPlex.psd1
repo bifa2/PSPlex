@@ -70,8 +70,6 @@ FormatsToProcess = @('PSPlex.format.ps1xml')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Add-PlexItemToCollection'
-    'Add-PlexItemToPlaylist'
 	'Copy-PlexPlaylist'
     'Find-PlexItem'
     'Get-PlexAuthenticationToken'
@@ -81,13 +79,13 @@ FunctionsToExport = @(
 	'Get-PlexLibrary'
 	'Get-PlexPlaylist'
 	'Get-PlexServer'
-	'Get-PlexSession'
+    'Get-PlexSession'
+    'Get-PlexSharedLibrary'
     'Get-PlexUser'
     'Import-PlexConfiguration'
     'Remove-PlexPlaylist'
     'Save-PlexConfiguration'
     'Set-PlexItemWatchStatus'
-    'Set-PlexVideoAttributes'
     'Stop-PlexConversion'
     'Stop-PlexSession'
 	'Update-PlexItemMetadata'
