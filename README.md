@@ -1,19 +1,19 @@
 # About
 
-This project started out as a script to copy a playlist from my account as a Plex Server owner to another user's account (on the same server). Slowly it got broken up into separate functions and become a simple PowerShell module.
+This project started out as a script to copy a playlist from my account as a Plex Server owner to another user's account (on the same server). Slowly it got broken up into separate functions and became a simple PowerShell module.
 
 # Getting Started:
 
 1. Save the folder `PSPlex` into a module path for PowerShell.
-    * Example: `C:\Users\YourUsername\Documents\WindowsPowerShell\Modules`
+    * Example: `C:\Program Files\PowerShell\Modules`
 2. Open PowerShell.
 3. Run `Get-PlexAuthenticationToken`. You will be prompted to enter your Plex account name and password.
 4. Run `Save-PlexConfiguration` and provide your Plex server name, the Plex hostname, protocol and port.
     * Example: `Save-PlexConfiguration -PlexServer myserver -PlexServerHostname namaste.yourdomain.com -protocol https -port 32400`
 
-After this step, in future you can just run `Import-PlexConfiguration` to work with your Plex server.
+After this step, in future when you open PowerShell you can just run `Import-PlexConfiguration` to work with your Plex server.
 
-In the event that your token should become invalid and you receive `401` errors, try running steps 3 and 4 again. It is step 3 that retrieves an access token from Plex.
+In the event that your token should become invalid and you receive `401` errors, try running steps 3 and 4 again. It is step 3 that retrieves an access token from Plex. Refreshing tokens is not catered for, yet.
 
 # Examples:
 
@@ -21,19 +21,23 @@ Get a list of users with access to your server:
 
 > `Get-PlexUser`
 
-Copy a playlist from your account to another:
+Copy a playlist from your account to another (e.g. a friend you have shared content with):
 
 > `Copy-PlexPlaylist -PlaylistName 'Family' -Username 'yourfriend@theiremail.com' -verbose`
 
 Copy **all** playlists from your account to another account:
 
-> `Get-PlexPlaylist | Foreach-Object { Copy-PlexPlaylist -PlaylistName $_.title -Username 'yourfriend@theiremail.com' -verbose }`
+> `Get-PlexPlaylist | Foreach-Object { Copy-PlexPlaylist -PlaylistName $_.title -Username 'yourfriend@theiremail.com' }`
 
 Copy a playlist to **all** users:
 
 > `$Users = Get-PlexUser`
-> `$Users | Foreach-Object { Copy-PlexPlaylist -PlaylistName 'Family' -Username $_.username -verbose }`
+> `$Users | Foreach-Object { Copy-PlexPlaylist -PlaylistName 'Family' -Username $_.username }`
 
+
+Get collections and show only the title and ID:
+
+> `Get-PlexCollection | select title,key`
 
 
 # Limitations:

@@ -26,6 +26,7 @@ function Import-PlexConfiguration
 	# Known issue that this will not work on Linux/MacOS. Will adapt later.
 	if(Test-Path $ConfigFile)
 	{
+		Write-Verbose -Message "Importing configuration from $ConfigFile"
 		$script:PlexConfigData = Get-Content -Path $ConfigFile -ErrorAction Stop | ConvertFrom-Json
 		# Decode the token in memory:
 		$script:PlexConfigData.Token = $(
@@ -41,7 +42,3 @@ function Import-PlexConfiguration
         break
     }
 }
-
-
-
-

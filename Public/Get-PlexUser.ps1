@@ -4,7 +4,11 @@ function Get-PlexUser
 	param(
         [Parameter(Mandatory=$false)]
         [String]
-        $username
+		$Username,
+
+		[Parameter(Mandatory=$false)]
+        [Switch]
+		$IncludeToken
     )
 
 	if($PlexConfigData.PlexServer -eq $Null)
@@ -15,18 +19,30 @@ function Get-PlexUser
 	try 
 	{
 		$data = Invoke-RestMethod -Uri "https://plex.tv/api/users`?`X-Plex-Token=$($PlexConfigData.Token)" -Method GET
-		if($username)
+		if($Username)
 		{
-			[array]$results = $data.MediaContainer.User | Where-Object { $_.username -eq $username }
+			[array]$results = $data.MediaContainer.User | Where-Object { $_.username -eq $Username }
 		}
 		else {
 			[array]$results = $data.MediaContainer.User
 		}
+
+		if($IncludeToken)
+		{
+			$CurrentPlexServer = Get-PlexServer -name $PlexConfigData.PlexServer -ErrorAction Stop
+			$results | ForEach-Object { 
+				$UserToken = Get-PlexUserToken -machineIdentifier $CurrentPlexServer.machineIdentifier -Username $_.username -ErrorAction Stop
+				$_ | Add-Member -NotePropertyName 'token' -NotePropertyValue $UserToken.token -Force
+			}
+		}
+
+
     }
     catch
     {
         throw $_
     }
 
+	$results | ForEach-Object { $_.psobject.TypeNames.Insert(0, "PSPlex.User") }
     return $results
 }

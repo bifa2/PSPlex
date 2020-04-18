@@ -52,10 +52,12 @@ function Copy-PlexPlaylist
 		throw "No saved configuration. Please run Get-PlexAuthenticationToken, then Save-PlexConfiguration first."
 	}
 
-	# Get a list of servers that we have access to:
+
+	#############################################################################
+	# Get the machine ID property for the current plex server we're working with:
+	Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Getting list of Plex servers"
 	try 
 	{
-		Write-Verbose -Message "Getting list of Plex servers"
 		$CurrentPlexServer = Get-PlexServer -name $PlexConfigData.PlexServer -ErrorAction Stop
 		if(!$CurrentPlexServer) 
 		{
@@ -68,10 +70,11 @@ function Copy-PlexPlaylist
 	}
 
 
-	# Use the machine ID to get the Server Access Tokens for the users:
+	#############################################################################
+	# Use the machine ID to get the server access tokens for the user we're targetting:
+	Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Getting server access token for user $Username"
 	try 
 	{
-		Write-Verbose -Message "Getting server access token for user $Username"
 		$UserServerToken = Get-PlexUserToken -machineIdentifier $CurrentPlexServer.machineIdentifier -Username $Username
 		if(!$UserServerToken) 
 		{
@@ -84,14 +87,21 @@ function Copy-PlexPlaylist
 	}
 	
 
+	#############################################################################
 	# Get the Playlist we want to copy:
+	Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Getting playlist $PlaylistName, including playlist items"
 	try 
 	{
-		Write-Verbose -Message "Finding playlist $PlaylistName"
+		# Get and filter:
 		$Playlist = Get-PlexPlaylist -ErrorAction Stop | Where-Object { $_.title -eq $PlaylistName }
 		if(!$Playlist) 
 		{
 			throw "Could not find playlist $PlaylistName."
+		}
+		else 
+		{
+			# We got a playlist. Now make another lookup by playlist ID and get the items in it:
+			$Playlist = Get-PlexPlaylist -ID $Playlist.ratingKey -IncludeItems -ErrorAction Stop
 		}
 	}
 	catch 
@@ -100,6 +110,7 @@ function Copy-PlexPlaylist
 	}
 
 
+	#############################################################################
 	if($NewPlaylistName)
 	{
 		$PlaylistTitle = $NewPlaylistName
@@ -109,16 +120,18 @@ function Copy-PlexPlaylist
 		$PlaylistTitle = $Playlist.title
 	}
 
+
+	#############################################################################
 	# Check whether the user already has a playlist by this name:
+	Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Checking $Username account for existing playlist"
 	try 
 	{
-		Write-Verbose -Message "Checking $Username account for existing playlist"
 		[array]$data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/playlists`?`X-Plex-Token=$($UserServerToken.Token)" -ErrorAction Stop
 
 		$ExistingPlaylistsWithSameName = $data.MediaContainer.Playlist | Where-Object { $_.title -eq $PlaylistTitle }
 		if($ExistingPlaylistsWithSameName)
 		{
-			Write-Verbose -Message "Removing existing Playlist."
+			Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Removing existing playlist."
 			foreach($PL in $ExistingPlaylistsWithSameName)
 			{
 				try
@@ -139,34 +152,19 @@ function Copy-PlexPlaylist
 	}
 
 	
+	#############################################################################
 	# Establish whether the playlist is smart or not; this will determine how we create it:
-
 	# If playlist is not smart:
 	if($Playlist.smart -eq 0)
 	{
-		Write-Verbose -Message "Original playlist is NOT smart."
-
-		# Get the Playlist items:
-		try 
-		{
-			Write-Verbose -Message "Getting playlist items"
-			$PlaylistItems = Get-PlexPlaylistItem -PlaylistID $Playlist.ratingKey -ErrorAction Stop
-		}
-		catch 
-		{
-			throw $_
-		}
-
-		if(!$PlaylistItems)
-		{
-			throw "Could not get playlist items."
-		}
+		Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Original playlist is NOT smart."
 
 		# Create a new playlist on the server, under the user's account:
 		try 
 		{
-			Write-Verbose -Message "Creating playlist"
-			$Data = Invoke-RestMethod -Uri "http://$($CurrentPlexServer.address)`:$($CurrentPlexServer.port)/playlists?uri=server://$($CurrentPlexServer.machineIdentifier)/com.plexapp.plugins.library/library/metadata/$(($PlaylistItems.ratingKey) -join ',')&title=$PlaylistTitle&smart=0&type=video&X-Plex-Token=$($UserServerToken.Token)" -Method "POST" -Erroraction Stop
+			Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Creating playlist"
+			$ItemsToAdd = $Playlist.Videos.ratingKey -join ','
+			$Data = Invoke-RestMethod -Uri "http://$($CurrentPlexServer.address)`:$($CurrentPlexServer.port)/playlists?uri=server://$($CurrentPlexServer.machineIdentifier)/com.plexapp.plugins.library/library/metadata/$ItemsToAdd&title=$PlaylistTitle&smart=0&type=video&X-Plex-Token=$($UserServerToken.Token)" -Method "POST" -Erroraction Stop
 			return $Data.MediaContainer.Playlist
 		}
 		catch 
@@ -176,20 +174,20 @@ function Copy-PlexPlaylist
 	}
 	elseif($Playlist.smart -eq 1)
 	{
-		Write-Verbose -Message "Original playlist is smart."
+		Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Original playlist is smart."
 
-		# Make an additional lookup to get the playlist object as this contains what parameters define how it is smart:
-		$PlaylistData = Invoke-RestMethod -Uri "http://$($CurrentPlexServer.address)`:$($CurrentPlexServer.port)/playlists/$($Playlist.ratingKey)?X-Plex-Token=$($PlexConfigData.Token)" -Method Get
-		$Playlist = $PlaylistData.MediaContainer.Playlist
+		# Although we have the playlist object from Get-PlexPlaylist, this function makes a query for all playlists before returning based on a match
+		# by the playlist name. With this, we're not given a property called .content which contains the data that defines *how* the playlist is smart.
+		
+		# So, make an additional lookup to get the playlist explicitly by ID, and include the items this time:
+		$PlaylistData = Get-PlexPlaylist -ID $Playlist.ratingKey -IncludeItems -ErrorAction Stop | Where-Object { $_.title -eq $PlaylistName }
 
 		# Parse the data in the playlist to establish what parameters were used to create the smart playlist.
-
 		# Split on the 'all?':
-		$SmartPlaylistParams = ($Playlist.content -split 'all%3F')[1]
-
+		$SmartPlaylistParams = ($PlaylistData.content -split 'all%3F')[1]
 		try
 		{
-			Write-Verbose -Message "Creating playlist"
+			Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Creating playlist"
 			$Data = Invoke-RestMethod -Uri "http://$($CurrentPlexServer.address)`:$($CurrentPlexServer.port)/playlists?uri=server://$($CurrentPlexServer.machineIdentifier)/com.plexapp.plugins.library/library/sections/2/all?$SmartPlaylistParams&title=$PlaylistTitle&smart=1&type=video&X-Plex-Product=Plex%20Web&X-Plex-Version=3.95.2&X-Plex-Client-Identifier=ni91ijrs5miuwc37d5esdrr3&X-Plex-Platform=Chrome&X-Plex-Platform-Version=75.0&X-Plex-Sync-Version=2&X-Plex-Model=bundled&X-Plex-Device=Windows&X-Plex-Device-Name=Chrome&X-Plex-Device-Screen-Resolution=1088x937%2C1920x1080&X-Plex-Token=$($UserServerToken.Token)&X-Plex-Language=en&X-Plex-Text-Format=plain" -Method "POST"  -Erroraction Stop
 			return $Data.MediaContainer.Playlist
 		}
@@ -201,6 +199,6 @@ function Copy-PlexPlaylist
 	}
 	else 
 	{
-		Write-Warning -Message "No work done."
+		Write-Warning -Message "Function: $($MyInvocation.MyCommand): No work done."
 	}
 }

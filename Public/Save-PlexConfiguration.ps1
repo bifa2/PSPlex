@@ -55,5 +55,5 @@ function Save-PlexConfiguration
 	}
 
 	# Save to disk:
-	$PlexConfigDataToStore | ConvertTo-Json | Out-File -FilePath $ConfigFile
+	$PlexConfigDataToStore | ConvertTo-Json | Out-File -FilePath $ConfigFile -Force
 }
