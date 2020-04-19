@@ -17,28 +17,40 @@ In the event that your token should become invalid and you receive `401` errors,
 
 # Examples:
 
-Get a list of users with access to your server:
+**Get a list of users with access to your server:**
 
-> `Get-PlexUser`
+`Get-PlexUser`
 
-Copy a playlist from your account to another (e.g. a friend you have shared content with):
+**Get a user and their access token:**
 
-> `Copy-PlexPlaylist -PlaylistName 'Family' -Username 'yourfriend@theiremail.com' -verbose`
+`$User = Get-PlexUser -Username 'yourfriend@theiremail.com -IncludeToken`
+`$User.Token`
 
-Copy **all** playlists from your account to another account:
+**Copy a playlist from your account to another account (e.g. a friend you have shared content with):**
 
-> `Get-PlexPlaylist | Foreach-Object { Copy-PlexPlaylist -PlaylistName $_.title -Username 'yourfriend@theiremail.com' }`
+`Copy-PlexPlaylist -PlaylistName 'Family' -Username 'yourfriend@theiremail.com' -verbose`
 
-Copy a playlist to **all** users:
+**Copy *all* playlists from your account to another account:**
 
-> `$Users = Get-PlexUser`
-> `$Users | Foreach-Object { Copy-PlexPlaylist -PlaylistName 'Family' -Username $_.username }`
+`Get-PlexPlaylist | Foreach-Object { Copy-PlexPlaylist -PlaylistName $_.title -Username 'yourfriend@theiremail.com' }`
 
+**Copy a single playlist to *all* users:**
 
-Get collections and show only the title and ID:
+`$Users = Get-PlexUser`
+`$Users | Foreach-Object { Copy-PlexPlaylist -PlaylistName 'Family' -Username $_.username }`
 
-> `Get-PlexCollection | select title,key`
+**Remove a playlist for your account:**
 
+`Remove-PlexPlaylist -ID 12345`
+
+**Remove a playlist for a different account:**
+
+`$User = Get-PlexUser -Username 'yourfriend@theiremail.com -IncludeToken`
+`Remove-PlexPlaylist -ID 54321 -AlternativeToken $User.Token`
+
+**Get collections and show only the title and ID:**
+
+`Get-PlexCollection | select title,key`
 
 # Limitations:
 

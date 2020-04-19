@@ -23,13 +23,19 @@ function Remove-PlexPlaylist
 	Write-Verbose -Message "Function: $($MyInvocation.MyCommand): Removing playlist"
 	try 
 	{
-		if($AlternativeToken) { $Token = $AlternativeToken} else { $Token = $PlexConfigData.Token }
+		if($AlternativeToken)
+		{ 
+			$Token = $AlternativeToken
+		} 
+		else 
+		{ 
+			$Token = $PlexConfigData.Token 
+		}
+		
 		Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`X-Plex-Token=$Token" -Method DELETE -ErrorAction Stop | Out-Null
     }
     catch
     {
         throw $_
     }
-
-    return $results
 }
