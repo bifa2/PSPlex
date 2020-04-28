@@ -1,7 +1,11 @@
 function Get-PlexCollection
 {  
 	[CmdletBinding()]
-	param(		
+	param(
+        [Parameter(Mandatory=$true)]
+        [Int]
+        $LibraryID,
+
         [Parameter(Mandatory=$false)]
         [PSObject]
 		$ID,
@@ -25,11 +29,11 @@ function Get-PlexCollection
 
 	if($ID)
 	{
-		$RestEndpoint   = "library/sections/2/all?collection=$ID&X-Plex-Token=$($PlexConfigData.Token)"
+		$RestEndpoint   = "library/sections/$LibraryID/all?collection=$ID&X-Plex-Token=$($PlexConfigData.Token)"
 	}
 	else
 	{
-		$RestEndpoint   = "library/sections/2/collection`?`X-Plex-Token=$($PlexConfigData.Token)"
+		$RestEndpoint   = "library/sections/$LibraryID/collection`?`X-Plex-Token=$($PlexConfigData.Token)"
 	}    
 
 	try 
