@@ -76,6 +76,7 @@ FunctionsToExport = @(
 	'Get-PlexCollection'
 	'Get-PlexConversion'
 	'Get-PlexItem'
+	'Get-PlexGenre'
 	'Get-PlexLibrary'
 	'Get-PlexPlaylist'
 	'Get-PlexServer'
