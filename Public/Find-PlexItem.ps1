@@ -1,15 +1,36 @@
 function Find-PlexItem
 {
+	<#
+		.SYNOPSIS
+			This function uses the search ability of Plex find items on your Plex server.
+		.DESCRIPTION
+			This function uses the search ability of Plex find items on your Plex server.
+			As objects returned have different properties depending on the type, there is
+			an option to refine this by type.
+		.PARAMETER ItemName
+			Name of what you wish to find.
+		.PARAMETER ItemType
+			Refines the output by type.
+		.PARAMETER ExactMatch
+			Return only items matching exactly what is specified as ItemName
+		.EXAMPLE
+			Find-PlexItem -ItemName 'The Dark Knight' -ItemType 'movie' -ExactMatch
+	#>
+	
 	[CmdletBinding()]
 	param(		
 		[Parameter(Mandatory=$true)]
 		[String]
 		$ItemName,
 
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$false)]
 		[ValidateSet('movie','episode')]
 		[String]
 		$ItemType,
+
+		[Parameter(Mandatory=$false)]
+		[String]
+		$LibraryName,
 
 		[Parameter(Mandatory=$false)]
 		[Switch]
@@ -25,12 +46,18 @@ function Find-PlexItem
 
 	Write-Verbose -Message "Searching for $ItemName."
 	try 
-	{
-		
+	{	
 		[array]$data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`includeCollections=0&sectionId=&query=$($ItemName)&limit=50&X-Plex-Token=$($PlexConfigData.Token)" -Method GET -ErrorAction Stop
 		
 		# Refine by type:
-		$ItemTypeResults = $data.MediaContainer.Hub | Where-Object { $_.type -eq $ItemType }
+		if($ItemType)
+		{
+			$ItemTypeResults = $data.MediaContainer.Hub | Where-Object { $_.type -eq $ItemType -and $_.Size -gt 0 }
+		}
+		else 
+		{
+			$ItemTypeResults = $data.MediaContainer.Hub | Where-Object { $_.Size -gt 0 }
+		}
 
 		# Example return object:
 		<#
@@ -42,11 +69,19 @@ function Find-PlexItem
 			Video         : {Video, Video}
 		#>
 
-		if($ItemTypeResults.size -gt 0)
+
+		if($ItemTypeResults)
 		{
+			# Note: This will be an issue if a user wants to find photos/audio but I don't and I'm not catering for that at the moment.
 			[Array]$Results = $ItemTypeResults | Select-Object -ExpandProperty Video
 
-			# Refine by the Item name to attempt an exact match:
+			# Refine by library name:
+			if($LibraryName)
+			{
+				[Array]$Results = $Results | Where-Object { $_.librarySectionTitle -eq $LibraryName }
+			}		
+
+			# Refine by the ItemName to attempt an exact match:
 			if($ExactMatch)
 			{
 				Write-Debug -Message "Exact match was specified"
