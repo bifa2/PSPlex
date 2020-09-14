@@ -160,11 +160,14 @@ function Find-PlexItem
 	}
 
 	# Add datetime objects so we don't have to work with unixtimes...
-	$Results | ForEach-Object { 
-		$_ | Add-Member -NotePropertyName 'lastViewedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.lastViewedAt) -Force
-		$_ | Add-Member -NotePropertyName 'addedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.addedAt) -Force
-		$_ | Add-Member -NotePropertyName 'updatedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.updatedAt) -Force
+	if($Results)
+	{
+		$Results | ForEach-Object { 
+			$_ | Add-Member -NotePropertyName 'lastViewedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.lastViewedAt) -Force
+			$_ | Add-Member -NotePropertyName 'addedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.addedAt) -Force
+			$_ | Add-Member -NotePropertyName 'updatedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.updatedAt) -Force
+		}
+
+		return $Results
 	}
-	
-	return $Results
 }
