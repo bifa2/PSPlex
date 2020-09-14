@@ -15,7 +15,7 @@ function Get-PlexPlaylist
         $AlternativeToken
 	)
 	
-	if($PlexConfigData.PlexServer -eq $Null)
+	if($Null -eq $PlexConfigData.PlexServer)
 	{
 		throw "You must call 'Import-PlexConfiguration' before calling this function."
 	}

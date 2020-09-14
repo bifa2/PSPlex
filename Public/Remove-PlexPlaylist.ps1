@@ -11,7 +11,7 @@ function Remove-PlexPlaylist
         $AlternativeToken
 	)
 	
-	if($PlexConfigData.PlexServer -eq $Null)
+	if($Null -eq $PlexConfigData.PlexServer)
 	{
 		# User has either not run Get-PlexAuthentication or imported the config.
 		throw "You must call 'Import-PlexConfiguration' before calling this function."

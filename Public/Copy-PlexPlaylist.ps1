@@ -47,7 +47,7 @@ function Copy-PlexPlaylist
 		$Force
 	)
 	
-	if($PlexConfigData.PlexServer -eq $Null)
+	if($Null -eq $PlexConfigData.PlexServer)
 	{
 		throw "No saved configuration. Please run Get-PlexAuthenticationToken, then Save-PlexConfiguration first."
 	}

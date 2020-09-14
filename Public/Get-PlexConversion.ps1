@@ -7,7 +7,7 @@ function Get-PlexConversion
 		$SessionId
     )
 
-	if($PlexConfigData.PlexServer -eq $Null)
+	if($Null -eq $PlexConfigData.PlexServer)
 	{
 		throw "You must call 'Get-PlexAuthenticationToken' or 'Import-PlexConfiguration' before calling this function."
 	}
