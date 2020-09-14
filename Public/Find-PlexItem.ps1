@@ -48,10 +48,13 @@ function Find-PlexItem
 
 	$RestEndpoint   = "/hubs/search/"
 
+	# URLEncode the title, otherwise we'll get '400 bad request' errors when searching for things like: Bill and Ted's ...
+	$ItemNameEncoded = [System.Web.HttpUtility]::UrlEncode($ItemName) 
+
 	Write-Verbose -Message "Searching for $ItemName."
 	try 
 	{	
-		[array]$global:data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`includeCollections=0&sectionId=&query=$($ItemName)&limit=50&X-Plex-Token=$($PlexConfigData.Token)" -Method GET -ErrorAction Stop
+		[array]$global:data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`includeCollections=0&sectionId=&query=$($ItemNameEncoded)&limit=50&X-Plex-Token=$($PlexConfigData.Token)" -Method GET -ErrorAction Stop
 		
 		# Refine by type:
 		if($ItemType)
