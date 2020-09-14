@@ -38,7 +38,6 @@ function Import-PlexConfiguration
 	}
 	else
 	{
-        Write-Warning 'No saved configuration information. Run Get-PlexAuthenticationToken, then Save-PlexConfiguration.'
-        break
+        throw 'No saved configuration information. Run Get-PlexAuthenticationToken, then Save-PlexConfiguration.'
     }
 }
