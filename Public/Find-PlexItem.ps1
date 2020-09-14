@@ -11,10 +11,10 @@ function Find-PlexItem
 			Name of what you wish to find.
 		.PARAMETER ItemType
 			Refines the output by type.
-		.PARAMETER ExactMatch
+		.PARAMETER ExactNameMatch
 			Return only items matching exactly what is specified as ItemName
 		.EXAMPLE
-			Find-PlexItem -ItemName 'The Dark Knight' -ItemType 'movie' -ExactMatch
+			Find-PlexItem -ItemName 'The Dark Knight' -ItemType 'movie' -ExactNameMatch
 	#>
 	
 	[CmdletBinding()]
@@ -33,11 +33,15 @@ function Find-PlexItem
 		$LibraryName,
 
 		[Parameter(Mandatory=$false)]
+		[Int]
+		$Year,
+
+		[Parameter(Mandatory=$false)]
 		[Switch]
-		$ExactMatch
+		$ExactNameMatch
     )
 
-	if($PlexConfigData.PlexServer -eq $Null)
+	if($Null -eq $PlexConfigData.PlexServer)
 	{
 		throw "No saved configuration. Please run Get-PlexAuthenticationToken, then Save-PlexConfiguration first."
 	}
@@ -47,7 +51,7 @@ function Find-PlexItem
 	Write-Verbose -Message "Searching for $ItemName."
 	try 
 	{	
-		[array]$data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`includeCollections=0&sectionId=&query=$($ItemName)&limit=50&X-Plex-Token=$($PlexConfigData.Token)" -Method GET -ErrorAction Stop
+		[array]$global:data = Invoke-RestMethod -Uri "$($PlexConfigData.Protocol)`://$($PlexConfigData.PlexServerHostname)`:$($PlexConfigData.Port)/$RestEndpoint`?`includeCollections=0&sectionId=&query=$($ItemName)&limit=50&X-Plex-Token=$($PlexConfigData.Token)" -Method GET -ErrorAction Stop
 		
 		# Refine by type:
 		if($ItemType)
@@ -75,29 +79,72 @@ function Find-PlexItem
 			# Note: This will be an issue if a user wants to find photos/audio but I don't and I'm not catering for that at the moment.
 			[Array]$Results = $ItemTypeResults | Select-Object -ExpandProperty Video
 
-			# Refine by library name:
-			if($LibraryName)
-			{
-				[Array]$Results = $Results | Where-Object { $_.librarySectionTitle -eq $LibraryName }
-			}		
-
 			# Refine by the ItemName to attempt an exact match:
-			if($ExactMatch)
+			if($ExactNameMatch)
 			{
-				Write-Debug -Message "Exact match was specified"
 				[Array]$Results = $Results | Where-Object { $_.title -eq $ItemName }
-				
-				# There could still be more than one result with an exact title match:
+				# There could still be more than one result with an exact title match due to the same item being in multiple libraries
+				# or even in the same library!
 				if($Results.count -gt 1)
 				{
 					Write-Warning -Message "Exact match was specified but there was more than 1 result for $ItemName."
-					$Results
-					return
 				}
-				else 
+			}
+
+			# Refine by library name:
+			if($LibraryName)
+			{
+				# When multiple results are returned from the API they are given a 'librarySectionTitle' property so we can use that to
+				# easily refine results. EDIT: Ok, sometimes they come back with 'reasonTitle'. Makes sense, not.
+				if($Results.Count -gt 1)
 				{
-					Write-Verbose -Message "No exact match found for $ItemName"
-				}			
+					Write-Verbose "Refining multiple results by library"
+					[Array]$Results = $Results | Where-Object { $_.librarySectionTitle -eq $LibraryName -or $_.reasonTitle -eq $LibraryName }
+				}
+				else
+				{
+					<# If there's only 1 result we need to determine if it's in the library specified and I can't see a way to do this.
+
+						Example object return:
+					
+						ratingKey             : 17423
+						key                   : /library/metadata/17423
+						guid                  : com.plexapp.agents.imdb://tt0110912?lang=en
+						studio                : Miramax
+						type                  : movie
+						title                 : Pulp Fiction
+						contentRating         : R
+						rating                : 9.4
+						audienceRating        : 9.6
+						year                  : 1994
+						tagline               : Just because you are a character doesn't mean you have character.
+						thumb                 : /library/metadata/17423/thumb/1551357231
+						art                   : /library/metadata/17423/art/1551357231
+						duration              : 9163154
+						originallyAvailableAt : 1994-09-10
+						addedAt               : 1551355150
+						updatedAt             : 1551357231
+						audienceRatingImage   : rottentomatoes://image.rating.upright
+						chapterSource         : media
+						primaryExtraKey       : /library/metadata/17532
+						ratingImage           : rottentomatoes://image.rating.ripe
+						Media                 : Media
+						Genre                 : {Genre, Genre}
+						Director              : Director
+						Writer                : Writer
+						Country               : Country
+						Role                  : {Role, Role, Role}
+					#>
+
+					# For now, we'll not filter.
+				}
+			}		
+
+			if($Year)
+			{
+				#[Array]$Results = $Results | Where-Object { ($_.originallyAvailableAt.split('-')[0]) -match $Year }
+				Write-Verbose "Refining results by Year: $Year"
+				[Array]$Results = $Results | Where-Object { $_.year -eq $Year }
 			}
 		}
 		else
@@ -111,6 +158,13 @@ function Find-PlexItem
     {
         throw $_
 	}
+
+	# Add datetime objects so we don't have to work with unixtimes...
+	$Results | ForEach-Object { 
+		$_ | Add-Member -NotePropertyName 'lastViewedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.lastViewedAt) -Force
+		$_ | Add-Member -NotePropertyName 'addedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.addedAt) -Force
+		$_ | Add-Member -NotePropertyName 'updatedAtDateTime' -NotePropertyValue (ConvertFrom-UnixTime $_.updatedAt) -Force
+	}
 	
-	return $results
+	return $Results
 }
